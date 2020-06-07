@@ -1,0 +1,243 @@
+const chai = require("chai");
+const expect = chai.expect;
+const { cartesian, filter, group } = require("../src/index");
+
+function test(title, input, expected) {
+  const actual = Array.from(cartesian(...input));
+
+  return it(
+    title,
+    () => expect(actual).to.deep.equal(expected)
+  );
+}
+
+function testError(title, input, exception) {
+  const actual = Array.from(cartesian(...input));
+
+  return it(
+    title,
+    () => expect(actual).to.throw(exception)
+  )
+}
+
+describe('Add column from array', () => {
+  test("empty input", [], []);
+
+  test(
+    "one array",
+    [
+      { key: [1, 2, 3] }
+    ],
+    [
+      { key: 1 },
+      { key: 2 },
+      { key: 3 }
+    ]
+  );
+
+  test(
+    "two arrays",
+    [
+      { a: [1, 2, 3] },
+      { b: ['x', 'y'] }
+    ],
+    [
+      { a: 1, b: 'x' },
+      { a: 1, b: 'y' },
+      { a: 2, b: 'x' },
+      { a: 2, b: 'y' },
+      { a: 3, b: 'x' },
+      { a: 3, b: 'y' },
+    ]
+  );
+
+  test(
+    "three arrays",
+    [
+      { a: [1, 2] },
+      { b: ['x', 'y'] },
+      { c: [30, 40] }
+    ],
+    [
+      { a: 1, b: 'x', c: 30 },
+      { a: 1, b: 'x', c: 40 },
+      { a: 1, b: 'y', c: 30 },
+      { a: 1, b: 'y', c: 40 },
+      { a: 2, b: 'x', c: 30 },
+      { a: 2, b: 'x', c: 40 },
+      { a: 2, b: 'y', c: 30 },
+      { a: 2, b: 'y', c: 40 },
+    ]
+  );
+});
+
+describe('Add column from function', () => {
+  test(
+    "function returns single value",
+    [
+      { a: [1, 2, 3] },
+      { b: row => row.a * 10 }
+    ],
+    [
+      { a: 1, b: 10 },
+      { a: 2, b: 20 },
+      { a: 3, b: 30 }
+    ]
+  );
+
+  test(
+    "function returns array",
+    [
+      { a: [1, 2, 3] },
+      { b: row => ["x" + row.a, "y" + row.a] }
+    ],
+    [
+      { a: 1, b: "x1" },
+      { a: 1, b: "y1" },
+      { a: 2, b: "x2" },
+      { a: 2, b: "y2" },
+      { a: 3, b: "x3" },
+      { a: 3, b: "y3" }
+    ]
+  );
+});
+
+describe('Iterate from existing array of objects', () => {
+  const data = cartesian(
+    { a: [1, 2, 3] },
+    { b: [4, 5, 6] }
+  );
+
+  test(
+    "filter on one array",
+    [
+      data,
+      { product: row => row.a * row.b }
+    ],
+    [
+      { a: 1, b: 4, product: 4 },
+      { a: 1, b: 5, product: 5 },
+      { a: 1, b: 6, product: 6 },
+
+      { a: 2, b: 4, product: 8 },
+      { a: 2, b: 5, product: 10 },
+      { a: 2, b: 6, product: 12 },
+
+      { a: 3, b: 4, product: 12 },
+      { a: 3, b: 5, product: 15 },
+      { a: 3, b: 6, product: 18 },
+    ]
+  );
+});
+
+describe('Filters', () => {
+  test(
+    "filter on one array",
+    [
+      { a: [1, 2, 3, 4, 5, 6] },
+      filter(row => row.a % 2 === 0)
+    ],
+    [
+      { a: 2 },
+      { a: 4 },
+      { a: 6 }
+    ]
+  );
+
+  test(
+    "filter on two arrays",
+    [
+      { a: [1, 2, 3] },
+      { b: [4, 5, 6] },
+      filter(row => (row.a + row.b) % 3 === 0)
+    ],
+    [
+      { a: 1, b: 5 },
+      { a: 2, b: 4 },
+      { a: 3, b: 6 },
+    ]
+  );
+
+  test(
+    "filter out all",
+    [
+      { a: [1, 2, 3] },
+      { b: [4, 5, 6] },
+      filter(row => (row.a + row.b) > 10)
+    ],
+    []
+  )
+});
+
+describe('Groups', () => {
+  test(
+    "group on third column",
+    [
+      { a: [1, 2] },
+      { b: ['x', 'y'] },
+
+      group("c"),
+
+      { d: [4, 5] },
+    ],
+    [
+      {
+        a: 1,
+        b: 'x',
+        c: [{ d: 4 }, { d: 5 }]
+      },
+      {
+        a: 1,
+        b: 'y',
+        c: [{ d: 4 }, { d: 5 }]
+      },
+      {
+        a: 2,
+        b: 'x',
+        c: [{ d: 4 }, { d: 5 }]
+      },
+      {
+        a: 2,
+        b: 'y',
+        c: [{ d: 4 }, { d: 5 }]
+      },
+    ]
+  );
+});
+
+describe('Mixed use cases', () => {
+  test(
+    "filter then add column from function",
+    [
+      { a: [1, 2, 3] },
+      { b: [4, 5, 6] },
+      filter(row => (row.a + row.b) % 3 === 0),
+      { product: row => row.a * row.b }
+    ],
+    [
+      { a: 1, b: 5, product: 5 },
+      { a: 2, b: 4, product: 8 },
+      { a: 3, b: 6, product: 18 },
+    ]
+  );
+
+  test(
+    "filter then group",
+    [
+      { a: [1, 2, 3] },
+      { b: [4, 5, 6] },
+      filter(row => (row.a + row.b) % 3 === 0),
+      { c: ["x", "y"] },
+      group("d"),
+      { e: row => [row.c + row.a, row.c + row.b] }
+    ],
+    [
+      { a: 1, b: 5, c: "x", d: [{ e: "x1" }, { e: "x5" }] },
+      { a: 1, b: 5, c: "y", d: [{ e: "y1" }, { e: "y5" }] },
+      { a: 2, b: 4, c: "x", d: [{ e: "x2" }, { e: "x4" }] },
+      { a: 2, b: 4, c: "y", d: [{ e: "y2" }, { e: "y4" }] },
+      { a: 3, b: 6, c: "x", d: [{ e: "x3" }, { e: "x6" }] },
+      { a: 3, b: 6, c: "y", d: [{ e: "y3" }, { e: "y6" }] },
+    ]
+  );
+});
