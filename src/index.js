@@ -37,9 +37,13 @@ function isColumnDefinition(step) {
     && Object.keys(step).length === 1;
 }
 
-function cartesian(...steps) {
+function cartesianGenerator(...steps) {
   if (steps.length === 0) return [];
   return generate({}, {}, steps);
+}
+
+function cartesian(...steps) {
+  return Array.from(cartesianGenerator(...steps));
 }
 
 function col(key, data) {
@@ -125,7 +129,7 @@ function discard(...cols) {
 }
 
 module.exports = {
-  cartesian,
+  cartesian, cartesianGenerator,
   filter,
   group,
   col,

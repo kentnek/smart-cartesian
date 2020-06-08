@@ -3,7 +3,7 @@ const expect = chai.expect;
 const { cartesian, filter, group, select, discard } = require("../src/index");
 
 function test(title, input, expected) {
-  const actual = Array.from(cartesian(...input));
+  const actual = cartesian(...input);
 
   return it(
     title,
@@ -12,7 +12,7 @@ function test(title, input, expected) {
 }
 
 function testError(title, input, exception) {
-  const actual = Array.from(cartesian(...input));
+  const actual = cartesian(...input);
 
   return it(
     title,
