@@ -1,10 +1,17 @@
 {
   "name": "smart-cartesian",
-  "version": "0.1.0",
-  "description": "",
+  "version": "0.3.0",
+  "files": [
+    "src"
+  ],
+  "description": "Smart cartesian product with filters and more",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kentnek/smart-cartesian.git"
   },
   "keywords": [],
   "author": "Kent",
