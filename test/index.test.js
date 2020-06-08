@@ -220,14 +220,14 @@ describe('Filters', () => {
 
 describe('Groups', () => {
   test(
-    "group on third column",
+    "one group",
     [
       { a: [1, 2] },
       { b: ['x', 'y'] },
 
-      group("c"),
-
-      { d: [4, 5] },
+      group("c",
+        { d: [4, 5] }
+      ),
     ],
     [
       {
@@ -252,6 +252,47 @@ describe('Groups', () => {
       },
     ]
   );
+
+  test(
+    "two groups",
+    [
+      { a: [1, 2] },
+      { b: ['x', 'y'] },
+
+      group("c",
+        { d: [4, 5] }
+      ),
+
+      group("e",
+        { f: [6, 7] }
+      ),
+    ],
+    [
+      {
+        a: 1,
+        b: 'x',
+        c: [{ d: 4 }, { d: 5 }],
+        e: [{ f: 6 }, { f: 7 }]
+      },
+      {
+        a: 1,
+        b: 'y',
+        c: [{ d: 4 }, { d: 5 }],
+        e: [{ f: 6 }, { f: 7 }]
+      },
+      {
+        a: 2,
+        b: 'x',
+        c: [{ d: 4 }, { d: 5 }],
+        e: [{ f: 6 }, { f: 7 }]
+      },
+      {
+        a: 2,
+        b: 'y',
+        c: [{ d: 4 }, { d: 5 }],
+        e: [{ f: 6 }, { f: 7 }]
+      },
+    ]);
 });
 
 describe('Select and Discard', () => {
@@ -310,8 +351,9 @@ describe('Mixed use cases', () => {
       { b: [4, 5, 6] },
       filter(row => (row.a + row.b) % 3 === 0),
       { c: ["x", "y"] },
-      group("d"),
-      { e: row => [row.c + row.a, row.c + row.b] }
+      group("d",
+        { e: row => [row.c + row.a, row.c + row.b] }
+      ),
     ],
     [
       { a: 1, b: 5, c: "x", d: [{ e: "x1" }, { e: "x5" }] },

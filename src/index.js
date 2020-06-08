@@ -104,12 +104,14 @@ function filter(filterFn) {
   }
 }
 
-function group(columnName) {
-  return function (row, scope, remainingSteps) {
-    return [{
+function group(columnName, ...steps) {
+  return function* (row, scope, remainingSteps) {
+    const nestedRow = {
       ...row,
-      [columnName]: Array.from(generate({}, scope, remainingSteps))
-    }];
+      [columnName]: Array.from(generate({}, scope, steps))
+    };
+
+    yield* generate(nestedRow, scope, remainingSteps);
   }
 }
 
