@@ -24,6 +24,7 @@ function* generate(row, scope, steps) {
 function isIterable(obj) {
   // checks for null and undefined
   if (obj === null || obj === undefined) return false;
+  if (typeof obj === "string") return false;
   return typeof obj[Symbol.iterator] === 'function';
 }
 
