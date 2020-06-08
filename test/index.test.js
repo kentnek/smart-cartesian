@@ -1,6 +1,6 @@
 const chai = require("chai");
 const expect = chai.expect;
-const { cartesian, filter, group, select, discard } = require("../src/index");
+const { cartesian, filter, group, select, discard, join } = require("../src/index");
 
 function test(title, input, expected) {
   const actual = cartesian(...input);
@@ -149,6 +149,34 @@ describe('Iterate from existing array of objects', () => {
       { a: 2, b: 'f' },
     ]
   );
+});
+
+describe('Joins', () => {
+  test(
+    "join on single column",
+
+    [
+      [
+        { a: 1, b: 'x' },
+        { a: 2, b: 'y' },
+        { a: 3, b: 'z' },
+      ],
+      join(
+        [
+          { b: 'y', c: 10 },
+          { b: 'y', c: 20 },
+          { b: 'z', c: 30 }
+        ],
+        "b"
+      )
+    ],
+
+    [
+      { a: 2, b: 'y', c: 10 },
+      { a: 2, b: 'y', c: 20 },
+      { a: 3, b: 'z', c: 30 },
+    ]
+  )
 });
 
 describe('Filters', () => {

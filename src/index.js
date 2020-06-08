@@ -11,7 +11,7 @@ function* generate(row, scope, steps) {
     yield* generate(row, scope, [col(key, data), ...remainingSteps]);
 
   } else if (isIterable(step)) {
-    yield* generate(row, scope, [forEach(step), ...remainingSteps]);
+    yield* generate(row, scope, [join(step), ...remainingSteps]);
 
   } else if (typeof step === "function") {
     yield* step(row, scope, remainingSteps);
@@ -61,14 +61,33 @@ function col(key, data) {
   }
 }
 
-function forEach(data) {
+function join(data, joinCondition) {
   return function* (row, scope, remainingSteps) {
+
+    let joinFn = (_) => true;
+
+    if (typeof joinCondition === "string") {
+      const colToJoin = joinCondition
+
+      joinFn = (valueObj) => scope.hasOwnProperty(colToJoin)
+        && valueObj.hasOwnProperty(colToJoin)
+        && scope[colToJoin] === valueObj[colToJoin];
+
+    } else if (typeof joinCondition === "function") {
+      joinFn = joinCondition;
+    }
+
+
     for (const valueObj of data) {
       if (typeof valueObj === "object") {
-        const newRow = { ...row, ...valueObj };
-        const newScope = { ...scope, ...valueObj };
+        if (joinFn(valueObj)) {
+          const newRow = { ...row, ...valueObj };
+          const newScope = { ...scope, ...valueObj };
 
-        yield* generate(newRow, newScope, remainingSteps);
+          yield* generate(newRow, newScope, remainingSteps);
+        }
+
+
       } else {
         throw "If a step is an array, it must be an array of objects." + JSON.stringify(value);
       }
@@ -132,7 +151,7 @@ module.exports = {
   cartesian, cartesianGenerator,
   filter,
   group,
-  col,
-  forEach,
-  select, discard
+  join,
+  select,
+  discard
 };
