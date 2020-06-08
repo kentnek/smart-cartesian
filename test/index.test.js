@@ -1,6 +1,6 @@
 const chai = require("chai");
 const expect = chai.expect;
-const { cartesian, filter, group } = require("../src/index");
+const { cartesian, filter, group, select, discard } = require("../src/index");
 
 function test(title, input, expected) {
   const actual = Array.from(cartesian(...input));
@@ -128,6 +128,27 @@ describe('Iterate from existing array of objects', () => {
       { a: 3, b: 6, product: 18 },
     ]
   );
+
+  const nestedData = [
+    { a: 1, b: ['a', 'b', 'c'] },
+    { a: 2, b: ['d', 'e', 'f'] },
+  ]
+
+  test(
+    "flatten nested data",
+    [
+      nestedData,
+      { b: row => row.b }
+    ],
+    [
+      { a: 1, b: 'a' },
+      { a: 1, b: 'b' },
+      { a: 1, b: 'c' },
+      { a: 2, b: 'd' },
+      { a: 2, b: 'e' },
+      { a: 2, b: 'f' },
+    ]
+  );
 });
 
 describe('Filters', () => {
@@ -201,6 +222,39 @@ describe('Groups', () => {
         b: 'y',
         c: [{ d: 4 }, { d: 5 }]
       },
+    ]
+  );
+});
+
+describe('Select and Discard', () => {
+
+  test("select columns",
+    [
+      { a: [1, 2] },
+      { b: [3, 4] },
+      { c: row => row.b * 2 },
+      select("a", "c"),
+    ],
+    [
+      { "a": 1, "c": 6 },
+      { "a": 1, "c": 8 },
+      { "a": 2, "c": 6 },
+      { "a": 2, "c": 8 },
+    ]
+  );
+
+  test("discard columns",
+    [
+      { a: [1, 2] },
+      { b: [3, 4] },
+      { c: row => row.b * 2 },
+      discard("b"),
+    ],
+    [
+      { "a": 1, "c": 6 },
+      { "a": 1, "c": 8 },
+      { "a": 2, "c": 6 },
+      { "a": 2, "c": 8 },
     ]
   );
 });

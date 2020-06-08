@@ -81,11 +81,46 @@ function filter(filterFn) {
 }
 
 function group(columnName) {
-  return function* (row, scope, remainingSteps) {
-    return yield {
+  return function (row, scope, remainingSteps) {
+    return [{
       ...row,
       [columnName]: Array.from(generate({}, scope, remainingSteps))
-    };
+    }];
+  }
+}
+
+function select(...cols) {
+  return function* (row, scope, remainingSteps) {
+    const newRow = {};
+    const newScope = {};
+
+    for (const col of cols) {
+      if (row.hasOwnProperty(col)) {
+        newRow[col] = row[col];
+        newScope[col] = scope[col];
+      }
+    }
+
+    return yield* generate(newRow, newScope, remainingSteps);
+  }
+}
+
+function discard(...cols) {
+  return function* (row, scope, remainingSteps) {
+    const newRow = { ...row };
+    const newScope = { ...scope };
+
+    for (const col of cols) {
+      if (row.hasOwnProperty(col)) {
+        delete newRow[col];
+      }
+
+      if (scope.hasOwnProperty(col)) {
+        delete newScope[col];
+      }
+    }
+
+    return yield* generate(newRow, newScope, remainingSteps);
   }
 }
 
@@ -94,5 +129,6 @@ module.exports = {
   filter,
   group,
   col,
-  forEach
+  forEach,
+  select, discard
 };
