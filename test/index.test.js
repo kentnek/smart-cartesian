@@ -1,6 +1,7 @@
-const chai = require("chai");
-const expect = chai.expect;
-const { cartesian, filter, group, select, discard, join } = require("../src/index");
+import {expect} from "chai";
+
+import {cartesian} from "../src";
+import {filter, join, group, select, discard} from "../src/operators";
 
 function test(title, input, expected) {
   const actual = cartesian(...input);

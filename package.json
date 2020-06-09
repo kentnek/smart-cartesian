@@ -1,13 +1,14 @@
 {
   "name": "smart-cartesian",
-  "version": "0.4.4",
+  "version": "0.5.0",
   "files": [
-    "src"
+    "dist"
   ],
   "description": "Smart cartesian product with filters and more",
-  "main": "src/index.js",
+  "main": "dist/main.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "babel src -d dist",
+    "test": "mocha -r esm"
   },
   "repository": {
     "type": "git",
@@ -19,10 +20,17 @@
     "cartesian-product",
     "functional"
   ],
-  "author": "Kent",
+  "author": "Kent <itaqmail@gmail.com> (",
   "license": "ISC",
   "devDependencies": {
+    "@babel/cli": "^7.10.1",
+    "@babel/core": "^7.10.2",
+    "@babel/preset-env": "^7.10.2",
     "chai": "^4.2.0",
+    "esm": "^3.2.25",
     "mocha": "^7.2.0"
+  },
+  "engines": {
+    "node": ">=7.5.0"
   }
 }
