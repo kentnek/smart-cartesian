@@ -5,19 +5,21 @@ function* generate(row, scope, steps) {
 
   const [step, ...remainingSteps] = steps;
 
-  if (isColumnDefinition(step)) {
-    const key = Object.keys(step)[0];
-    const data = step[key];
-    yield* generate(row, scope, [col(key, data), ...remainingSteps]);
+  if (isIterable(step)) { // array of objects
+    yield* generate(row, scope, [merge(step), ...remainingSteps]);
 
-  } else if (isIterable(step)) {
-    yield* generate(row, scope, [join(step), ...remainingSteps]);
+  } else if (typeof step === "object") {
+    const colSteps = Object.entries(step).map(
+      ([key, data]) => col(key, data)
+    );
+
+    yield* generate(row, scope, [...colSteps, ...remainingSteps]);
 
   } else if (typeof step === "function") {
     yield* step(row, scope, remainingSteps);
 
   } else {
-    throw "Unknown step type: " + JSON.stringify(step);
+    throw "Unknown step type."
   }
 }
 
@@ -31,11 +33,6 @@ function isIterable(obj) {
 function makeIterable(obj) {
   if (isIterable(obj)) return obj;
   return [obj];
-}
-
-function isColumnDefinition(step) {
-  return (typeof step === "object")
-    && Object.keys(step).length === 1;
 }
 
 function cartesianGenerator(...steps) {
@@ -62,38 +59,44 @@ function col(key, data) {
   }
 }
 
-function join(data, joinCondition) {
+/**
+ * Given an array of objects as data, merge the current row with each object in the data
+ * to form a new row.
+ *
+ * @param data
+ * @param mergeCondition
+ * @returns {function(...[*]=)}
+ */
+function merge(data, mergeCondition = () => true) {
   return function* (row, scope, remainingSteps) {
-
-    let joinFn = (_) => true;
-
-    if (typeof joinCondition === "string") {
-      const colToJoin = joinCondition
-
-      joinFn = (valueObj) => scope.hasOwnProperty(colToJoin)
-        && valueObj.hasOwnProperty(colToJoin)
-        && scope[colToJoin] === valueObj[colToJoin];
-
-    } else if (typeof joinCondition === "function") {
-      joinFn = joinCondition;
-    }
-
-
-    for (const valueObj of data) {
-      if (typeof valueObj === "object") {
-        if (joinFn(valueObj)) {
-          const newRow = { ...row, ...valueObj };
-          const newScope = { ...scope, ...valueObj };
+    for (const objToMerge of data) {
+      if (typeof objToMerge === "object") {
+        if (mergeCondition(scope, objToMerge)) {
+          const newRow = { ...row, ...objToMerge };
+          const newScope = { ...scope, ...objToMerge };
 
           yield* generate(newRow, newScope, remainingSteps);
         }
-
-
       } else {
-        throw "If a step is an array, it must be an array of objects." + JSON.stringify(value);
+        throw "Only object is allowed in arrays." + JSON.stringify(value);
       }
     }
   }
+}
+
+/**
+ * Join is merge, based on a equal column between the current row and data.
+ *
+ * @param data
+ * @param column
+ * @returns {function(...[*]=)}
+ */
+function join(data, column) {
+  const joinFn = (scope, objToMerge) =>
+    scope.hasOwnProperty(column) && objToMerge.hasOwnProperty(column)
+    && scope[column] === objToMerge[column];
+
+  return merge(data, joinFn);
 }
 
 function filter(filterFn) {

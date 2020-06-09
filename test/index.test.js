@@ -39,7 +39,7 @@ describe('Add column from array', () => {
     "two arrays",
     [
       { a: [1, 2, 3] },
-      { b: ['x', 'y'] }
+      { b: ['x', 'y'] },
     ],
     [
       { a: 1, b: 'x' },
@@ -52,12 +52,12 @@ describe('Add column from array', () => {
   );
 
   test(
-    "three arrays",
-    [
-      { a: [1, 2] },
-      { b: ['x', 'y'] },
-      { c: [30, 40] }
-    ],
+    "three arrays, in one object",
+    [{
+      a: [1, 2],
+      b: ['x', 'y'],
+      c: [30, 40]
+    }],
     [
       { a: 1, b: 'x', c: 30 },
       { a: 1, b: 'x', c: 40 },
@@ -103,10 +103,10 @@ describe('Add column from function', () => {
 });
 
 describe('Iterate from existing array of objects', () => {
-  const data = cartesian(
-    { a: [1, 2, 3] },
-    { b: [4, 5, 6] }
-  );
+  const data = cartesian({
+    a: [1, 2, 3],
+    b: [4, 5, 6]
+  });
 
   test(
     "filter on one array",
@@ -347,8 +347,7 @@ describe('Mixed use cases', () => {
   test(
     "filter then group",
     [
-      { a: [1, 2, 3] },
-      { b: [4, 5, 6] },
+      { a: [1, 2, 3], b: [4, 5, 6] },
       filter(row => (row.a + row.b) % 3 === 0),
       { c: ["x", "y"] },
       group("d",
@@ -365,3 +364,4 @@ describe('Mixed use cases', () => {
     ]
   );
 });
+
